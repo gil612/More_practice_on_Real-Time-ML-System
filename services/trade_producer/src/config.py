@@ -13,5 +13,8 @@ class Config(BaseSettings):
     def product_ids_list(self) -> List[str]:
         """Convert comma-separated string to list of strings"""
         return [x.strip() for x in self.product_ids.split(',')]
+    
+    live_or_historical: str = 'live'
+    last_n_days: int = 7
 
 config = Config()
