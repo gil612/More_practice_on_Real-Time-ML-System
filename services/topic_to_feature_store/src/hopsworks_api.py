@@ -5,6 +5,14 @@ import pandas as pd
 
 from src.config import config, hopsworks_config
 
+# If we want to keep the connection alive, we can use the following code instead in the push_value_to_feature_group function:
+
+# project = hopsworks.login(
+#     project=hopsworks_config.hopsworks_project_name,
+# )
+
+# feature_store = project.get_feature_store()
+
 def push_value_to_feature_group(
     project_name: str,
     feature_group_name: str,
@@ -29,12 +37,12 @@ def push_value_to_feature_group(
     Returns:
         None
     """
-    
     project = hopsworks.login(
-        project=hopsworks_config.hopsworks_project_name,
-    )
+    project=hopsworks_config.hopsworks_project_name,
+)
 
     feature_store = project.get_feature_store()
+    
 
     feature_group = feature_store.get_or_create_feature_group(
         name=feature_group_name,
@@ -55,3 +63,4 @@ def push_value_to_feature_group(
         value_df,
         write_options={"start_offline_materialization": start_offline_materialization},
     )
+

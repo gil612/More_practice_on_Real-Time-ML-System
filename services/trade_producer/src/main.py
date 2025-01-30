@@ -3,7 +3,7 @@ from typing import List
 from loguru import logger
 from quixstreams import Application
 
-from src.kraken_websocket_api import (
+from src.trade_data_source.kraken_websocket_api import (
     KrakenWebsocketAPI,
     Trade,
 )
@@ -55,9 +55,12 @@ def produce_trades(
 
 if __name__ == "__main__":
     from src.config import config
+
+    from src.trade_data_source.kraken_websocket_api import KrakenWebsocketAPI
+    kraken_api = KrakenWebsocketAPI(product_ids_list=config.product_ids_list)
     
     produce_trades(
         kafka_broker_address=config.kafka_broker_address,
         kafka_topic=config.kafka_topic,
-        product_ids_list=config.product_ids_list,
+        trade_data_source=kraken_api,
     )

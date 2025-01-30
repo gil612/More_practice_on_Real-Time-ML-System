@@ -5,15 +5,18 @@ from websocket import create_connection
 
 from loguru import logger
 
-from pydantic import BaseModel
+# from pydantic import BaseModel
 
-class Trade(BaseModel):
-    product_id: str
-    quantity: float
-    price: float
-    timestamp_ms: int
+# class Trade(BaseModel):
+#     product_id: str
+#     quantity: float
+#     price: float
+#     timestamp_ms: int
 
-class KrakenWebsocketAPI:
+from src.trade_data_source.trade import Trade
+from src.trade_data_source.base import TradeSource
+
+class KrakenWebsocketAPI(TradeSource):
 
     """
     Class for reading real-time trades from the Kraken Websocket API
