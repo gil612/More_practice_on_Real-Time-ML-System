@@ -5,9 +5,8 @@ import json
 
 
 class KrakenRestAPI:
-    URL = "https://api.kraken.com/0/public/Trades"
 
-    URL = "https://api.kraken.com/0/public/Trades?pair={product_id}&since={since_ms}"
+    URL = "https://api.kraken.com/0/public/Trades?pair={product_id}&since={since_sec}"
 
     def __init__(
         self,
@@ -47,7 +46,7 @@ class KrakenRestAPI:
 
 
         # replacing the placeholders in the URL with actual values for the first product id and since_ms
-        url = self.URL.format(product_id=self.product_ids_list[0], since_ms=self.from_ms)
+        url = self.URL.format(product_id=self.product_ids_list[0], since_sec=self.from_ms//1000)
         response = requests.request("GET", url, headers=headers, data=payload)
         print(response.text)
 
