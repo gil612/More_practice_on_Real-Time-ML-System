@@ -73,11 +73,12 @@ def produce_trades(
             for trade in trades:
                 # Serialize an event using the defined Topic
                 # transform it into a sequence of bytes
-                message = topic.serialize(key=trade.product_id, value=trade.model_dump())
-               
-                
-                # Produce a message into the Kafka topic
-                producer.produce(topic=topic.name, value=message.value, key=message.key)
+                trade['product_id'] = product_ids_list[0]
+
+                for product_id in product_ids_list:
+                    message = topic.serialize(key=product_id, value=trade)
+                    producer.produce(topic=topic.name, value=message.value, key=message.key)
+        
 
                 logger.debug(f"Pushed trade to Kafka: {trade}")
 
