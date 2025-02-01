@@ -42,8 +42,8 @@ def produce_trades(
         kraken_api = KrakenWebsocketAPI(product_ids_list=product_ids_list)
     else:
         # I need historical data, so I need to fetch the data from the Kraken REST API
-        from src.trade_data_source.kraken_rest_api import KrakenRestAPI  
-        kraken_api = KrakenRestAPI(
+        from src.trade_data_source.kraken_rest_api import KrakenRestAPIMultipleProducts
+        kraken_api = KrakenRestAPIMultipleProducts(
             product_ids_list=product_ids_list,
             last_n_days=last_n_days,
         )
@@ -66,7 +66,6 @@ def produce_trades(
             for trade in trades:
                 # Serialize an event using the defined Topic
                 # transform it into a sequence of bytes
-                trade['product_id'] = product_ids_list[0]
 
                 for product_id in product_ids_list:
                     message = topic.serialize(key=product_id, value=trade)

@@ -3,6 +3,59 @@ import requests
 from loguru import logger
 import json
 
+class KrakenRestAPIMultipleProducts:
+
+    def __init__(
+            self,
+            product_ids_list: List[str],
+            last_n_days: int
+    ) -> None:
+        self.product_ids_list = product_ids_list
+
+        self.kraken_apis = [
+            KrakenRestAPI(product_ids_list=[product_id], last_n_days=last_n_days)
+            for product_id in product_ids_list
+            ]
+        
+    def get_trades(self) -> List[dict]:
+        """
+        Gets trade data from each kraken_api in self.kraken_apis and returns a list with all trades from all kraken_apis.
+        
+        Args:
+            None
+
+        Returns:
+            List[dict]: A list with all trades from all kraken_apis.
+        """
+
+        trades = []
+
+        for kraken_api in self.kraken_apis:
+            
+            if kraken_api.is_done():
+                # if we are done fetching historical data fo rthis product_id, skip it
+                continue
+            else:
+                trades += kraken_api.get_trades()
+            
+        return trades
+    
+    def is_done(self) -> bool:
+        """
+        Checks if all kraken_apis are done fetching historical data.
+
+        Args:
+            None
+
+        Returns:
+            bool: True if all kraken_apis are done fetching historical data, False otherwise.
+        """
+        for kraken_api in self.kraken_apis: 
+            if not kraken_api.is_done():
+                return False
+        return True
+
+
 
 class KrakenRestAPI:
 
@@ -99,8 +152,6 @@ class KrakenRestAPI:
         logger.debug(f'Fetched {len(trades)} trades')
         # log the last trade timestamp
         logger.debug(f'Last trade timestamp: {self.last_trade_ms}')
-
-    
 
         return trades
 
