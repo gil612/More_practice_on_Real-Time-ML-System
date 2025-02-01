@@ -42,19 +42,12 @@ def produce_trades(
         kraken_api = KrakenWebsocketAPI(product_ids_list=product_ids_list)
     else:
         # I need historical data, so I need to fetch the data from the Kraken REST API
-        from src.trade_data_source.kraken_rest_api import KrakenRestAPI
-
-        # get current timestamps in milliseconds
-        from time import time
-       
-        
-        to_ms = int(time() * 1000)
-        from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
+        from src.trade_data_source.kraken_rest_api import KrakenRestAPI  
         kraken_api = KrakenRestAPI(
             product_ids_list=product_ids_list,
-            from_ms=from_ms,
-            to_ms=to_ms,
+            last_n_days=last_n_days,
         )
+
 
     # Create a Producer instance
     with app.get_producer() as producer:
