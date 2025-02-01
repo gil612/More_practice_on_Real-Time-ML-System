@@ -78,8 +78,8 @@ class KrakenWebsocketAPI(TradeSource):
                     timestamp_ms=self.to_ms(trade['timestamp']),
                 )
             )
-
         return trades
+
 
     def is_done(self) -> bool:
         """

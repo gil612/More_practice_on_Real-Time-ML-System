@@ -1,10 +1,11 @@
-from pydantic import BaseModel
+from dataclasses import dataclass, asdict
 
-class Trade(BaseModel):
-    """
-    A class that represents a trade.
-    """
+@dataclass
+class Trade:
     product_id: str
     quantity: float
     price: float
     timestamp_ms: int
+
+    def to_dict(self):
+        return asdict(self)
