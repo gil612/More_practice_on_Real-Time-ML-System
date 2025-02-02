@@ -1,23 +1,15 @@
 version: '3.7'
 name: redpanda-dev-cluster
-networks:
-  redpanda_network:
-    driver: bridge
-volumes:
-  redpanda: null
 services:
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v23.2.21
+    image: docker.redpanda.com/redpandadata/redpanda:v23.2.16
     command:
-      - redpanda start
-      - --smp 1
-      - --overprovisioned
+      - redpanda
+      - start
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
       # Address the broker advertises to clients that connect to the Kafka API.
-      # Use the internal addresses to connect to the Redpanda brokers
-      # from inside the same Docker network.
-      # Use the external addresses to connect to the Redpanda brokers
-      # from outside the Docker network.
+      # Use the internal addresses to connect to the Kafka API from inside the same Docker network.
+      # Use the external addresses to connect to the Kafka API from outside the Docker network.
       - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
       - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
       # Address the broker advertises to clients that connect to the HTTP Proxy.
@@ -26,7 +18,10 @@ services:
       # Redpanda brokers use the RPC API to communicate with each other internally.
       - --rpc-addr redpanda:33145
       - --advertise-rpc-addr redpanda:33145
+      - --smp 1
+      - --memory 1G
       - --mode dev-container
+      - --default-log-level=info
     ports:
       - 18081:18081
       - 18082:18082
@@ -34,18 +29,19 @@ services:
       - 19644:9644
     volumes:
       - redpanda:/var/lib/redpanda/data
-    networks:
-      - redpanda_network
     healthcheck:
-      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true'"]
       interval: 15s
       timeout: 3s
       retries: 5
       start_period: 5s
+    networks:
+      - redpanda_network
+
   console:
-    image: docker.redpanda.com/redpandadata/console:v2.7.2
+    image: docker.redpanda.com/redpandadata/console:v2.3.8
     entrypoint: /bin/sh
-    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
     environment:
       CONFIG_FILEPATH: /tmp/config.yml
       CONSOLE_CONFIG_FILE: |
@@ -58,14 +54,16 @@ services:
           adminApi:
             enabled: true
             urls: ["http://redpanda:9644"]
-        connect:
-          enabled: true
-          clusters:
-            - name: local-connect-cluster
-              url: http://connect:8083
     ports:
       - 8080:8080
     networks:
       - redpanda_network
     depends_on:
       - redpanda
+
+networks:
+  redpanda_network:
+    name: redpanda_network
+
+volumes:
+  redpanda: null

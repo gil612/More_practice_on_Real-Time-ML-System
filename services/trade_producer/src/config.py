@@ -16,5 +16,7 @@ class Config(BaseSettings):
     
     live_or_historical: str = 'live'
     last_n_days: int = 7
+    n_threads: int = 10
+    cache_dir_historical_data: str = '/tmp/historical_trade_data'
 
 config = Config()

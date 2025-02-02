@@ -14,6 +14,8 @@ def produce_trades(
     product_ids_list: List[str],
     live_or_historical: str,
     last_n_days: int,
+    n_threads: int = 10,
+    cache_dir_historical_data: str = '/tmp/historical_trade_data',
 ):
     """
     Reads trades from the Kraken Websocket API and saves them in the given `kafka_topic`
@@ -24,7 +26,8 @@ def produce_trades(
         product_id (str): The product id to get the trades from
         live_or_historical (str): The type of data source to use. 'live' or 'historical'
         last_n_days (int): The number of days to fetch historical data from.
-
+        n_threads (int): Number of threads to use for historical data fetching
+        cache_dir_historical_data (str): Directory to cache historical trade data
 
     Returns:
         None
@@ -46,6 +49,8 @@ def produce_trades(
         kraken_api = KrakenRestAPIMultipleProducts(
             product_ids_list=product_ids_list,
             last_n_days=last_n_days,
+            n_threads=n_threads,
+            cache_dir=cache_dir_historical_data,
         )
 
 
@@ -90,4 +95,6 @@ if __name__ == "__main__":
         # extra parameters i need when running the trade_producer against historical data from Kraken REST API
         live_or_historical=config.live_or_historical,
         last_n_days=config.last_n_days,
+        n_threads=config.n_threads,
+        cache_dir_historical_data=config.cache_dir_historical_data,
     )
