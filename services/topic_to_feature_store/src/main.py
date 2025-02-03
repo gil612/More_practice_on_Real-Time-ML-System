@@ -3,8 +3,7 @@ from typing import List
 from quixstreams import Application
 from loguru import logger
 
-from src.hopsworks_api import push_value_to_feature_group
-from src.config import config, hopsworks_config
+
 
 
 def topic_to_feature_store(
@@ -15,7 +14,8 @@ def topic_to_feature_store(
     feature_group_version: int,
     feature_group_primary_keys: List[str],
     feature_group_event_time: str,
-    start_offline_materialization: bool
+    start_offline_materialization: bool,
+    batch_size: int
 ):
     """
     Reads incoming messages from the given `kafka_input_topic`, and pushes them to the
@@ -41,6 +41,8 @@ def topic_to_feature_store(
         consumer_group=kafka_consumer_group,
     )
 
+    batch = []
+
     # Create a consumer and start a polling loop
     with app.get_consumer() as consumer:
 
@@ -60,33 +62,38 @@ def topic_to_feature_store(
             # decode the message bytes into a dictionary
             import json
             value = json.loads(value.decode('utf-8'))
+
+            # Append the messages to batch
+            batch.append(value)
+
+            # If the batch is not full yet, continue polling
+            if len(batch) < batch_size:
+                logger.debug(f"Batch is not full yet, continuing to poll. Batch size: {len(batch)} < {batch_size}")
+                continue
             
+            logger.debug(f"Batch is full, pushing to feature group. Batch size: {len(batch)} >= {batch_size}")
             push_value_to_feature_group(
+                value=batch,
                 project_name=hopsworks_config.hopsworks_project_name,
                 feature_group_name=feature_group_name,
                 feature_group_version=feature_group_version,
-                features_dict=value,
                 feature_group_primary_keys=feature_group_primary_keys,
                 feature_group_event_time=feature_group_event_time,
                 start_offline_materialization=start_offline_materialization,
             )
+            # clear the batch
+            batch = []
 
-            # breakpoint()
-
-            # we need to push the value to the Feature Store here
-
-            
-            # Store the offset of the processed message on the Consumer 
-            # for the auto-commit mechanism.
-            # It will send it to Kafka in the background.
-            # Storing offset only after the message is processed enables at-least-once delivery
-            # guarantees.
+            # Store the offset
             consumer.store_offsets(message=msg)
 
 if __name__ == "__main__":
+    from config import config, hopsworks_config
+    from hopsworks_api import push_value_to_feature_group
 
     topic_to_feature_store(
         kafka_broker_address=config.kafka_broker_address,
+
         kafka_input_topic=config.kafka_input_topic,
         kafka_consumer_group=config.kafka_consumer_group,
         feature_group_name=config.feature_group_name,
@@ -94,4 +101,5 @@ if __name__ == "__main__":
         feature_group_primary_keys=config.feature_group_primary_keys,
         feature_group_event_time=config.feature_group_event_time,
         start_offline_materialization=config.start_offline_materialization,
+        batch_size=config.batch_size,
     )

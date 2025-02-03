@@ -3,7 +3,7 @@ from typing import List, Dict
 import hopsworks
 import pandas as pd
 
-from src.config import config, hopsworks_config
+from config import hopsworks_config
 
 # If we want to keep the connection alive, we can use the following code instead in the push_value_to_feature_group function:
 
@@ -11,13 +11,14 @@ from src.config import config, hopsworks_config
 #     project=hopsworks_config.hopsworks_project_name,
 # )
 
+
 # feature_store = project.get_feature_store()
 
 def push_value_to_feature_group(
+    value: List[Dict],
     project_name: str,
     feature_group_name: str,
     feature_group_version: int,
-    features_dict: Dict,
     feature_group_primary_keys: List[str],
     feature_group_event_time: str,
     start_offline_materialization: bool
@@ -56,7 +57,8 @@ def push_value_to_feature_group(
     )
 
     # transform the value dict into a pandas DataFrame
-    value_df = pd.DataFrame([features_dict])
+    value_df = pd.DataFrame(value)
+
 
     # push the value to the Feature Store
     feature_group.insert(

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 
@@ -15,6 +15,7 @@ class Config(BaseSettings):
     feature_group_primary_keys: List[str]
     feature_group_event_time: str
     start_offline_materialization: bool
+    batch_size: Optional[int] = 1
 
 class HopsworksConfig(BaseSettings):
     model_config = SettingsConfigDict(env_file="hopsworks_credentials.env")
