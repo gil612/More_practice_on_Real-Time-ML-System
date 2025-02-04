@@ -7,7 +7,14 @@ run-historical-dev:
 	poetry run python src/main.py
 
 build:
-	poetry build
+	docker build -t topic-to-feature-store .
+
+run: build
+	docker run \
+	--network=redpanda_network \
+	--env-file live.prod.env \
+	--env-file hopsworks_credentials.env \
+	topic-to-feature-store
 
 
 
