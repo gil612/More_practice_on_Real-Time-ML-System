@@ -216,3 +216,9 @@ services/to-feature-store/hopsworks_credentials.env
 services/news/cryptopanic_credentials.env
 services/news-signal/anthropic_credentials.env
 **/comet_credentials.env
+
+# services
+services/topic_to_feature_store/test_connection.py
+services/trade_producer/src/alphavantage.py
+services/trade_producer/setup_historical_config.sh
+services/trade_producer/setup_live_config.sh

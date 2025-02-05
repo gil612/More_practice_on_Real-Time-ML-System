@@ -34,12 +34,19 @@ def topic_to_feature_store(
     Returns:
         None
     """
-    # Configure an Application. 
-    # The config params will be used for the Consumer instance too.
-    app = Application(
-        broker_address=kafka_broker_address,  
-        consumer_group=kafka_consumer_group,
-    )
+    logger.info(f"Connecting to Kafka at {kafka_broker_address}")
+    logger.info(f"Using topic: {kafka_input_topic}")
+    logger.info(f"Using consumer group: {kafka_consumer_group}")
+
+    try:
+        app = Application(
+            broker_address=kafka_broker_address,
+            consumer_group=kafka_consumer_group,
+        )
+        logger.info("Successfully created Kafka application")
+    except Exception as e:
+        logger.error(f"Failed to create Kafka application: {str(e)}")
+        raise
 
     batch = []
 

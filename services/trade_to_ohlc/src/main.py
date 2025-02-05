@@ -1,8 +1,6 @@
 from quixstreams import Application
 from datetime import timedelta
 from loguru import logger
-from typing import Any, List, Tuple, Optional, Dict
-
 
 def init_ohlcv_candle(trade:dict):
     """
@@ -14,7 +12,7 @@ def init_ohlcv_candle(trade:dict):
         "low": trade['price'],
         "close": trade['price'],
         "volume": trade['quantity'],
-        "product_id": trade['product_id']
+        "timestamp": None
     }
 
 def update_ohlcv_candle(candle:dict, trade:dict):
@@ -25,7 +23,6 @@ def update_ohlcv_candle(candle:dict, trade:dict):
     candle['low'] = min(candle['low'], trade['price'])
     candle['close'] = trade['price']
     candle['volume'] += trade['quantity']
-    candle['product_id'] = trade['product_id']
     # candle['timestamp'] = trade['timestamp']
     return candle
 
@@ -51,7 +48,7 @@ def transform_trade_to_ohlcv(
         consumer_group=kafka_consumer_group,
     )
 
-    input_topic = app.topic(name=kafka_input_topic, value_deserializer="json", timestamp_extractor=custom_ts_extractor)
+    input_topic = app.topic(name=kafka_input_topic, value_deserializer="json")
     output_topic = app.topic(name=kafka_output_topic, value_serializer="json")
 
     # create a Quix Streams Dataframe
@@ -60,7 +57,7 @@ def transform_trade_to_ohlcv(
     sdf = (
         sdf.tumbling_window(duration_ms=timedelta(seconds=ohlcv_window_seconds))
         .reduce(reducer=update_ohlcv_candle, initializer=init_ohlcv_candle)
-        .current()
+        .final()
     )
     
 
@@ -70,11 +67,10 @@ def transform_trade_to_ohlcv(
     sdf['low'] = sdf['value']['low']
     sdf['close'] = sdf['value']['close']
     sdf['volume'] = sdf['value']['volume']
-    sdf['product_id'] = sdf['value']['product_id']
     sdf['timestamp_ms'] = sdf['end']
 
 
-    sdf = sdf[['product_id', 'timestamp_ms', 'open', 'high', 'low', 'close', 'volume']]
+    sdf = sdf[['timestamp_ms', 'open', 'high', 'low', 'close', 'volume']]
 
 
     # print the output to the console
@@ -82,30 +78,7 @@ def transform_trade_to_ohlcv(
 
     sdf = sdf.to_topic(output_topic)
     
-    app.run()
-
-def custom_ts_extractor(
-    value: Dict,
-    headers: Optional[List[Tuple[str, bytes]]] = None,
-    timestamp: float = 0,
-    timestamp_type: Any = None
-) -> int:
-    """Extract timestamp from the message value.
-    
-    Args:
-        value (Dict): The message value
-        headers: Message headers (optional)
-        timestamp: Message timestamp (optional)
-        timestamp_type: Message timestamp type (optional)
-        
-    Returns:
-        int: The timestamp in milliseconds
-    """
-    return value["timestamp_ms"]
-
-
-
-
+    app.run(sdf)
 
 if __name__ == "__main__":
     from config import config
@@ -116,5 +89,4 @@ if __name__ == "__main__":
         kafka_consumer_group=config.kafka_consumer_group,
         ohlcv_window_seconds=config.ohlcv_window_seconds
     )
-
 

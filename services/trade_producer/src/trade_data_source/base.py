@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from src.trade_data_source.trade import Trade
+from .trade import Trade
 
 class TradeSource(ABC):
 

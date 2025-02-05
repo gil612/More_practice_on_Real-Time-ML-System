@@ -13,8 +13,8 @@ from loguru import logger
 #     price: float
 #     timestamp_ms: int
 
-from src.trade_data_source.trade import Trade
-from src.trade_data_source.base import TradeSource
+from .trade import Trade
+from .base import TradeSource
 
 class KrakenWebsocketAPI(TradeSource):
 

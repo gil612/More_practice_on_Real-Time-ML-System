@@ -1,5 +1,5 @@
 run-live-dev:
-	copy live.dev.env .env
+# copy live.dev.env .env
 	poetry run python src/main.py
 
 run-historical-dev:

@@ -1,12 +1,20 @@
+import sys
+import os
+
+# Add the src directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from typing import List
 
 from loguru import logger
 from quixstreams import Application
 
-from src.trade_data_source.kraken_websocket_api import (
+# Use absolute imports
+from trade_data_source.kraken_websocket_api import (
     KrakenWebsocketAPI,
     Trade,
 )
+
 
 def produce_trades(
     kafka_broker_address: str,
@@ -34,7 +42,7 @@ def produce_trades(
     """    
 
     assert live_or_historical in ['live', 'historical'], f"Invalid value for live_or_historical: {live_or_historical}"
-    # Create an Application instance with Kafka config
+    # Create an Application instance with Kafka config using the provided address
     app = Application(broker_address=kafka_broker_address)
 
     # Define a topic "my_topic" with JSON serialization
@@ -44,8 +52,8 @@ def produce_trades(
     if live_or_historical == 'live':
         kraken_api = KrakenWebsocketAPI(product_ids_list=product_ids_list)
     else:
-        # I need historical data, so I need to fetch the data from the Kraken REST API
-        from src.trade_data_source.kraken_rest_api import KrakenRestAPIMultipleProducts
+        # Use absolute import here too
+        from trade_data_source.kraken_rest_api import KrakenRestAPIMultipleProducts
         kraken_api = KrakenRestAPIMultipleProducts(
             product_ids_list=product_ids_list,
             last_n_days=last_n_days,
@@ -81,9 +89,9 @@ def produce_trades(
 
 
 if __name__ == "__main__":
-    from src.config import config
+    from config import config  # Update this import too
 
-    from src.trade_data_source.kraken_websocket_api import KrakenWebsocketAPI
+    from trade_data_source.kraken_websocket_api import KrakenWebsocketAPI
     kraken_api = KrakenWebsocketAPI(product_ids_list=config.product_ids_list)
 
     

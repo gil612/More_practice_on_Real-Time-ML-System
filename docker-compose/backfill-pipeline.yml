@@ -1,16 +1,18 @@
+version: '3'
 name: backfill-pipeline
 networks:
   redpanda_network:
     external: true
+    name: redpanda_network
 services:
   trade_producer:
     build:
       context: ../services/trade_producer
       dockerfile: Dockerfile
-    env_file:
-      - ../services/trade_producer/historical.prod.env
     networks:
       - redpanda_network
+    env_file:
+      - ../services/trade_producer/historical.prod.env
 
   trade_to_ohlc:
     build:
@@ -25,10 +27,11 @@ services:
     build:
       context: ../services/topic_to_feature_store
       dockerfile: Dockerfile
+    networks:
+      - redpanda_network
     env_file:
       - ../services/topic_to_feature_store/historical.prod.env
       - ../services/topic_to_feature_store/hopsworks_credentials.env
-    networks:
-      - redpanda_network
+
 
 
