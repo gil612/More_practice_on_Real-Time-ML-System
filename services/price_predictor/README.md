@@ -1,7 +1,8 @@
-In price predictor we are going to train the pipeline that will be used to predict the price of the stock.
+some notes on the price predictor:
 
-The pipeline will be trained using the feature view that we created in the feature_store service.
+- It consumes OHLCV from the `ohlcv` topic
+- It produces predictions to the `predictions` topic
 
-The pipeline will be trained using the training data that we have in the feature store.
+Currently with 505 rows in the `ohlcv` topic, test size is 30% of data, target price is would using the shift method, current 5 minutes.
 
-
+Mean absolute error is 286.5
