@@ -51,7 +51,6 @@ def train_model(
     train_df['target_price'] = train_df['close'].shift(-forecast_steps)
     test_df['target_price'] = test_df['close'].shift(-forecast_steps)
     logger.debug("Added target price column to the training and testing data")
-    breakpoint()
 
     # remove rows with NaN values
     train_df = train_df.dropna()

@@ -6,3 +6,9 @@ some notes on the price predictor:
 Currently with 505 rows in the `ohlcv` topic, test size is 30% of data, target price is would using the shift method, current 5 minutes.
 
 Mean absolute error is 286.5
+
+Update:
+
+Increased the dataset to 2580 rows, test size is 30% of data, target price is would using the shift method, current 5 minutes.
+
+Mean absolute error is 156.87

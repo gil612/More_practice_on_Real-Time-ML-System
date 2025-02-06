@@ -17,6 +17,10 @@ start-backfill-pipeline:
 stop-backfill-pipeline:
 	docker compose -f backfill-pipeline.yml down
 
+build-topic-to-feature:
+	docker compose -f feature-pipeline.yml build --no-cache topic_to_feature_store
+	docker compose -f feature-pipeline.yml up -d topic_to_feature_store
+
 
 
 

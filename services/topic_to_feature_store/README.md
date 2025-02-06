@@ -1,6 +1,13 @@
-What is the differece between online and offlline feature store?
+Some notes on the feature store:
 
-Online feature store is the one that is used for real-time predictions.
-Offline feature store is the one that is used for batch predictions. - it keeps historical features for training pipelines.
+recieve messages from kafka topic - that means we must run trade_producer and trade_to_ohlc with docker run command.
 
-- Some Pytohn packages need a gcc compiler to be installed, so I add command to the docker compiler to install it.
+For feature store I will use hopsworks. When it comes to specific tools I will use hopsworks-api. If we use aws, i will use SageMaker Feature Store.
+
+# Here are some open-source feature store:
+https://www.featurestore.org/
+
+
+Learn Hopsworks Tutorial - ONLINE!
+https://docs.hopsworks.ai/3.2/tutorials/#online
+https://github.com/logicalclocks/hopsworks-tutorials/blob/master/real-time-ai-systems/fraud_online/1_fraud_online_feature_pipeline.ipynb

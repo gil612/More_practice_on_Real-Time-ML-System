@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ../services/topic_to_feature_store/live.prod.env
-      - ../services/topic_to_feature_store/hopsworks_credentials.env
+      - ../services/topic_to_feature_store/credentials.env
     networks:
       - redpanda_network
 

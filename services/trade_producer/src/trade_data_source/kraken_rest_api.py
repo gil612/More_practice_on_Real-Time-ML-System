@@ -2,7 +2,7 @@ from typing import List, Tuple, Optional, Dict
 import requests
 from loguru import logger
 import json
-from src.trade_data_source.trade import Trade
+from trade_data_source.trade import Trade
 from pathlib import Path
 
 class KrakenRestAPI:
@@ -75,33 +75,64 @@ class KrakenRestAPI:
 
         since_sec = self.last_trade_ms // 1000
         url = self.URL.format(product_id=self.product_ids_list[0], since_sec=since_sec)
-        response = requests.request("GET", url, headers=headers, data=payload)
-        # parse string into dictionary
-        data = json.loads(response.text)
-
-        # It can happen that we get an error response from the Kraken REST API
         
-        trades = [
-            Trade(
-                product_id=self.product_ids_list[0],
-                price=float(trade[0]),
-                quantity=float(trade[1]),
-                timestamp_ms=int(float(trade[2]) * 1000)
-            )
-            for trade in data['result'][self.product_ids_list[0]]
-        ]
+        logger.debug(f"Requesting trades from URL: {url}")
+        response = requests.request("GET", url, headers=headers, data=payload)
+        
+        # Log response details
+        logger.debug(f"Response status code: {response.status_code}")
+        logger.debug(f"Response headers: {response.headers}")
+        logger.debug(f"Response text: {response.text[:500]}...")  # First 500 chars
+        
+        # Check response status
+        if response.status_code != 200:
+            logger.error(f"Error from Kraken API: {response.text}")
+            return []
 
-        # filter out trades that are after the end timestamp
-        trades = [trade for trade in trades if trade.timestamp_ms <= self.to_ms]
+        try:
+            data = json.loads(response.text)
+            
+            # Check for Kraken API errors
+            if 'error' in data and data['error']:
+                logger.error(f"Kraken API error: {data['error']}")
+                return []
 
-        last_ts_in_ns = int(data['result']['last'])
-        self.last_trade_ms = last_ts_in_ns // 1_000_000
-        self._is_done = self.last_trade_ms >= self.to_ms
+            # It can happen that we get an error response from the Kraken REST API
+            trades = []
+            for trade in data['result'][self.product_ids_list[0]]:
+                trade_obj = Trade(
+                    product_id=self.product_ids_list[0],
+                    price=float(trade[0]),
+                    quantity=float(trade[1]),
+                    timestamp_ms=int(float(trade[2]) * 1000)
+                )
+                trades.append(trade_obj)
 
-        logger.debug(f'Fetched {len(trades)} trades')
-        logger.debug(f'Last trade timestamp: {self.last_trade_ms}')
+            # filter out trades that are after the end timestamp
+            filtered_trades = []
+            for trade in trades:
+                if trade.timestamp_ms <= self.to_ms:
+                    filtered_trades.append(trade)
+            trades = filtered_trades
 
-        return trades
+            last_ts_in_ns = int(data['result']['last'])
+            self.last_trade_ms = last_ts_in_ns // 1_000_000
+            self._is_done = self.last_trade_ms >= self.to_ms
+
+            logger.debug(f'Fetched {len(trades)} trades')
+            logger.debug(f'Last trade timestamp: {self.last_trade_ms}')
+
+            return trades
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON response: {e}")
+            return []
+        except KeyError as e:
+            logger.error(f"Missing key in response: {e}")
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            return []
 
 
     def is_done(self) -> bool:

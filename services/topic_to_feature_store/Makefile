@@ -5,16 +5,13 @@ run-live-dev:
 run-historical-dev:
 	copy historical.dev.env .env
 	poetry run python src/main.py
-
+	
 build:
-	docker build -t topic-to-feature-store .
+	docker build -t topic_to_feature_store .
 
-run: build
+run-live: build
 	docker run \
-	--network=redpanda_network \
-	--env-file live.prod.env \
-	--env-file hopsworks_credentials.env \
-	topic-to-feature-store
-
-
-
+		--network=redpanda_network \
+		--env-file live.prod.env \
+		--env-file credentials.env \
+		topic_to_feature_store

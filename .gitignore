@@ -222,3 +222,5 @@ services/topic_to_feature_store/test_connection.py
 services/trade_producer/src/alphavantage.py
 services/trade_producer/setup_historical_config.sh
 services/trade_producer/setup_live_config.sh
+
+services/x_topic_to_feature_store/*

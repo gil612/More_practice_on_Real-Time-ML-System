@@ -14,10 +14,18 @@ RUN apt-get update && apt-get install -y iputils-ping net-tools \
 # Install Python Poetry with version 1.8.3
 RUN pip install poetry==1.8.3
 
-# Copy the source code to the working directory
-COPY . /app
+# Copy only pyproject.toml first to leverage Docker cache
+COPY pyproject.toml ./
 
-# Install the dependencies
+# Delete any existing poetry.lock file and generate a new one
+RUN rm -f poetry.lock && \
+    poetry lock && \
+    poetry install --no-root
+
+# Copy the rest of the source code
+COPY . .
+
+# Install the project itself with a fresh lock
 RUN poetry install
 
 # Run the application

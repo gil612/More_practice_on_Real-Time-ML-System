@@ -31,7 +31,7 @@ services:
       - redpanda_network
     env_file:
       - ../services/topic_to_feature_store/historical.prod.env
-      - ../services/topic_to_feature_store/hopsworks_credentials.env
+      - ../services/topic_to_feature_store/credentials.env
 
 
 
