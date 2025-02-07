@@ -19,10 +19,19 @@ class HopsworksConfig(BaseSettings):
     hopsworks_api_key: str
     class Config:
         env_file = "hopsworks_credentials.env"
+
+class CometConfig(BaseSettings):
+    comet_api_key: str
+    comet_project_name: str
+    class Config:
+        env_file = "comet_credentials.env"
     
+
 
 
 config = AppConfig()
 hopsworks_config = HopsworksConfig()
+comet_config = CometConfig()
+
 
 
