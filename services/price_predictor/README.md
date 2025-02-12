@@ -18,3 +18,21 @@ Update 2:
 Increased the dataset to 9640 rows, test size is 30% of data, target price is would using the shift method, current 5 minutes.
 
 Mean absolute error is 90.3
+
+
+Model training:
+sklearn website: https://scikit-learn.org/
+When we deal with tabular data?, the model that we can use is:
+- XGBoost - hyperparameter tuning cab get terribly slow
+- LightGBM - not as powerful as XGBoost but its better computationally
+- CatBoost - Categorical values. good for non-linear relationships.
+
+I need to understand the results of the model.
+
+
+
+
+
+
+
+- 

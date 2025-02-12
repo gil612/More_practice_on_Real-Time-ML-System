@@ -15,3 +15,12 @@ run-live: build
 		--env-file live.prod.env \
 		--env-file credentials.env \
 		topic_to_feature_store
+
+run-historical: build
+	docker run \
+		--network=redpanda_network \
+		--env-file historical.prod.env \
+		--env-file credentials.env \
+		topic_to_feature_store
+
+

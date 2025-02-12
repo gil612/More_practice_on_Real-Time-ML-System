@@ -37,43 +37,30 @@ def topic_to_feature_store(
     Returns:
         None
     """
-    # Configure an Application
+    # Configure an Application. 
+    # The config params will be used for the Consumer instance too.
     app = Application(
         broker_address=kafka_broker_address,  
         consumer_group=kafka_consumer_group,
-        auto_offset_reset="earliest",  # Add this to read from the beginning
     )
 
     batch = []
-    total_messages = 0  # Add counter
-
+    
     # Create a consumer and start a polling loop
     with app.get_consumer() as consumer:
-        logger.info(f"Subscribing to topic: {kafka_input_topic}")
+
         consumer.subscribe(topics=[kafka_input_topic])
 
         while True:
             msg = consumer.poll(0.1)
 
             if msg is None:
-                if len(batch) > 0:
-                    logger.info(f"No more messages. Processing final batch of size {len(batch)}")
-                    push_value_to_feature_group(
-                        batch,
-                        feature_group_name,
-                        feature_group_version,
-                        feature_group_primary_keys,
-                        feature_group_event_time,
-                        start_offline_materialization,
-                    )
-                    batch = []
                 continue
             elif msg.error():
                 logger.error('Kafka error:', msg.error())
                 continue
 
             value = msg.value()
-            total_messages += 1  # Increment counter
 
             # decode the message bytes into a dictionary
             import json
@@ -82,16 +69,12 @@ def topic_to_feature_store(
             # Append the message to the batch
             batch.append(value)
 
-            # Log progress periodically
-            if total_messages % 1000 == 0:
-                logger.info(f"Processed {total_messages} messages so far")
-
             # If the batch is not full yet, continue polling
             if len(batch) < batch_size:
-                logger.debug(f'Batch has size {len(batch)} < {batch_size}...')
+                logger.debug(f'Batch has size {len(batch)} < {batch_size:,}...')
                 continue
             
-            logger.debug(f'Batch has size {len(batch)} >= {batch_size}... Pushing data to Feature Store')
+            logger.debug(f'Batch has size {len(batch)} >= {batch_size:,}... Pushing data to Feature Store')
             push_value_to_feature_group(
                 batch,
                 feature_group_name,
@@ -99,7 +82,7 @@ def topic_to_feature_store(
                 feature_group_primary_keys,
                 feature_group_event_time,
                 start_offline_materialization,
-          )
+            )
 
             # Clear the batch
             batch = []
@@ -112,8 +95,8 @@ def topic_to_feature_store(
             consumer.store_offsets(message=msg)
 
 if __name__ == "__main__":
-    # Fix the import path
-    from config import config  # Remove 'src.' from the import
+
+    from config import config
 
     topic_to_feature_store(
         kafka_broker_address=config.kafka_broker_address,

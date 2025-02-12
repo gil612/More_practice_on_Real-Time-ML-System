@@ -1,22 +1,30 @@
 [tool.poetry]
-name = "price-predictor"
+name = "price_predictor"
 version = "0.1.0"
-description = ""
-authors = ["gil612 <sgba000@gmail.com>"]
-packages = [{include = "src"}]
+description = "Price Predictor Service for Real-time ML System"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [
+    { include = "src" }
+]
 
 [tool.poetry.dependencies]
-python = ">=3.12,<3.13"
+python = ">=3.9,<3.13"
 numpy = "1.26.4"
 pandas = "2.1.4"
 pyarrow = "14.0.1"
 scikit-learn = "1.4.0"
-hopsworks = "^4.1.5"
 pydantic = "2.6.1"
 pydantic-settings = "2.1.0"
 loguru = "0.7.2"
-setuptools = "69.0.3"
+hopsworks = "^4.1.5"
+python-dotenv = "^1.0.0"
 comet-ml = "^3.49.0"
+setuptools = "69.0.3"
+xgboost = "^2.1.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.2.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
