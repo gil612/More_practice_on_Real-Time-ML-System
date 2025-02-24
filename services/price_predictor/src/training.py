@@ -1,5 +1,5 @@
 from typing import Optional
-
+import hashlib
 from comet_ml import Experiment
 from loguru import logger
 from sklearn.metrics import mean_absolute_error
@@ -19,6 +19,8 @@ def train_model(
     last_n_days: int,
     forecast_steps: int,
     perc_test_data: Optional[float] = 0.3,
+    n_search_trials: Optional[int] = 0,
+    n_splits: Optional[int] = 3,
 ):
     """
     Reads features from the Feature Store
@@ -48,6 +50,10 @@ def train_model(
             Number of steps to forecast into the future.
         perc_test_data: float
             Percentage of the data to use for testing.
+        n_search_trials: int
+            Number of search trials for the XGBoost model.
+        n_splits: int
+            Number of splits for the XGBoost model.
 
     Returns:
         None
@@ -57,6 +63,10 @@ def train_model(
         api_key=comet_config.comet_api_key,
         project_name=comet_config.comet_project_name,
     )
+    experiment.log_parameter("last_n_days", last_n_days)
+    experiment.log_parameter("forecast_steps", forecast_steps)
+    experiment.log_parameter("n_search_trials", n_search_trials)
+    experiment.log_parameter("n_splits", n_splits)
     
     # Load feature data from the Feature Store
     from ohlc_data_reader import OhlcDataReader
@@ -78,6 +88,11 @@ def train_model(
     )
     logger.debug(f"Read {len(ohlc_data)} rows from the offline store")
     experiment.log_parameter("n_raw_feature_rows", len(ohlc_data))
+
+    # log a hash of the dataset to comet
+    
+    dataset_hash = hashlib.sha256(ohlc_data.to_numpy().tobytes()).hexdigest()
+    experiment.log_parameter("ohlc_data_hash", dataset_hash)
 
     # split the data into training and testing
     logger.debug(f"Splitting the data into training and testing")
@@ -174,20 +189,27 @@ def train_model(
     logger.debug(f"Mean absolute error of CurrentPriceBaseline: {mae}")
     experiment.log_metric("mae_CurrentPriceBaseline", mae)
 
+ # train an XGBoost model
+    from xgboost import XGBRegressor
+    from models.xgboost_model import XGBoostModel
+
+    
+    xgb_model = XGBoostModel()
+    xgb_model.fit(X_train, y_train, n_search_trials=n_search_trials, n_splits=n_splits)
+    y_pred = xgb_model.predict(X_test)
+    mae = mean_absolute_error(y_test, y_pred)
+    logger.debug(f"Mean absolute error: {mae}")
+    experiment.log_metric("mae", mae)
+
+
+
     # compute mae on the training data for debugging purposes
     y_train_pred = model.predict(X_train)
     mae_train = mean_absolute_error(y_train, y_train_pred)
     logger.debug(f"Mean absolute error on the training data of CurrentPriceBaseline: {mae_train}")
     experiment.log_metric("mae_training_CurrentPriceBaseline", mae_train)
 
-    # train an XGBoost model
-    from xgboost import XGBRegressor
-    xgb_model = XGBRegressor()
-    xgb_model.fit(X_train, y_train)
-    y_pred = xgb_model.predict(X_test)
-    mae = mean_absolute_error(y_test, y_pred)
-    logger.debug(f"Mean absolute error: {mae}")
-    experiment.log_metric("mae", mae)
+   
     
     # compute mae on the training data for debugging purposes
     y_train_pred = xgb_model.predict(X_train)
@@ -215,4 +237,6 @@ if __name__ == '__main__':
         product_id=config.product_id,
         last_n_days=config.last_n_days,
         forecast_steps=config.forecast_steps,
+        n_search_trials=config.n_search_trials,
+        n_splits=config.n_splits,
     )
