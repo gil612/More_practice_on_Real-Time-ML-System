@@ -179,29 +179,41 @@ class OhlcDataReader:
     def read_from_offline_store(
         self,
         product_id: str,
-        # from_timestamp_ms: int,
-        # to_timestamp_ms: int
         last_n_days: int,
     ) -> pd.DataFrame:
         """
         Reads OHLC data from the offline feature store for the given product_id
+        
+        Args:
+            product_id: str
+                The product ID to get data for
+            last_n_days: int
+                Number of days of historical data to fetch
+            
+        Returns:
+            pd.DataFrame: DataFrame containing OHLC data sorted by timestamp
         """
-        to_timestamp_ms = int(time.time() * 1000)
+        # Use a fixed end timestamp (e.g., start of current day UTC)
+        current_ts = int(time.time())
+        # Round down to start of day in UTC
+        to_timestamp_ms = (current_ts - (current_ts % (24 * 60 * 60))) * 1000
         from_timestamp_ms = to_timestamp_ms - last_n_days * 24 * 60 * 60 * 1000
+        
+        # logger.debug(f"Fetching data from {from_timestamp_ms} to {to_timestamp_ms}")
         
         feature_view = self._get_feature_view()
         features = feature_view.get_batch_data()
 
-        # filter the features for the given product_id and time range
-        features = features[features['product_id'] == product_id]
-        features = features[features['timestamp_ms'] >= from_timestamp_ms]
-        features = features[features['timestamp_ms'] <= to_timestamp_ms]
-        # sort the features by timestamp (ascending)
-        features = features.sort_values(by='timestamp_ms').reset_index(drop=True)
+        # Filter and sort the features
+        features = features[
+            (features['product_id'] == product_id) &
+            (features['timestamp_ms'] >= from_timestamp_ms) &
+            (features['timestamp_ms'] <= to_timestamp_ms)
+        ].sort_values(by='timestamp_ms').reset_index(drop=True)
         
-
-        # breakpoint()
-
+        # logger.debug(f"Fetched {len(features)} rows of data")
+        # logger.debug(f"Time range: from {pd.Timestamp(from_timestamp_ms, unit='ms')} to {pd.Timestamp(to_timestamp_ms, unit='ms')}")
+        
         return features
 
     @staticmethod
