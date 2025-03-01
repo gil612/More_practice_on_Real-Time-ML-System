@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class AppConfig(BaseSettings):
     feature_view_name: str = "ohlcv_feature_view"
-    feature_view_version: int = 6
+    feature_view_version: int = 12
     feature_group_name: str 
     feature_group_version: int
     ohlc_window_sec: int

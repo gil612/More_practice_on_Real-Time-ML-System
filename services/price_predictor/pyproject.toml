@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "price_predictor"
 version = "0.1.0"
-description = "Price Predictor Service for Real-time ML System"
+description = "A price prediction service using technical analysis"
 authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
 packages = [
@@ -9,9 +9,9 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
-numpy = "1.26.4"
-pandas = "2.1.4"
+python = ">=3.12,<3.13"
+numpy = "^1.26.0"
+pandas = "^2.0.0"
 pyarrow = "14.0.1"
 scikit-learn = "1.4.0"
 pydantic = "2.6.1"
@@ -23,10 +23,16 @@ comet-ml = "^3.49.0"
 setuptools = "69.0.3"
 xgboost = "^2.1.4"
 optuna = "^4.2.1"
+ta-lib = "^0.4.28"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2.5"
+pytest = "^7.0.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = [
+    "poetry-core>=1.0.0",
+    "setuptools>=42",
+    "wheel",
+    "Cython>=0.29.21",
+]
 build-backend = "poetry.core.masonry.api"

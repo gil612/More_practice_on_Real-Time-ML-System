@@ -5,11 +5,11 @@ from sklearn.metrics import mean_absolute_error
 import joblib
 import os
 
-from config import CometConfig, HopsworksConfig
-from feature_engineering import add_technical_indicators
-from models.current_price_baseline import CurrentPriceBaseline
-from models.xgboost_model import XGBoostModel
-from utils import hash_dataframe
+from src.config import CometConfig, HopsworksConfig
+from src.feature_engineering import add_technical_indicators
+from src.models.current_price_baseline import CurrentPriceBaseline
+from src.models.xgboost_model import XGBoostModel
+from src.utils import hash_dataframe
 
 
 def train_model(
@@ -74,7 +74,7 @@ def train_model(
         experiment.log_parameter("n_splits", n_splits)
 
         # Load feature data from the Feature Store
-        from ohlc_data_reader import OhlcDataReader
+        from src.ohlc_data_reader import OhlcDataReader
 
         ohlc_data_reader = OhlcDataReader(
             ohlc_window_sec=ohlc_window_sec,
@@ -274,7 +274,7 @@ def train_model(
 
 if __name__ == '__main__':
 
-    from config import config, hopsworks_config, comet_config
+    from src.config import config, hopsworks_config, comet_config
     import sys
 
     exit_code = train_model(
