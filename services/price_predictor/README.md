@@ -29,8 +29,8 @@ When we deal with tabular data?, the model that we can use is:
 
 I need to understand the results of the model.
 
-
-
+# All suported Indicators and Functions
+https://ta-lib.github.io/ta-lib-python/funcs.html
 
 
 

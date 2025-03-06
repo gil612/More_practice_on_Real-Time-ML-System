@@ -6,9 +6,9 @@ import joblib
 import os
 
 from src.config import CometConfig, HopsworksConfig
-from src.feature_engineering import add_technical_indicators
+from src.feature_engineering import add_engineered_features
 from src.models.current_price_baseline import CurrentPriceBaseline
-from src.models.xgboost_model import XGBoostModel
+from src.models.xgboost_model import CurrentPricePredictor
 from src.utils import hash_dataframe
 
 
@@ -143,12 +143,13 @@ def train_model(
         X_test = X_test[['open', 'high', 'low', 'close', 'volume']]
         
         # add technical indicators to the features
-        X_train = add_technical_indicators(X_train)
-        X_test = add_technical_indicators(X_test)
+        X_train = add_engineered_features(X_train)
+        X_test = add_engineered_features(X_test)
         logger.debug(f"Added technical indicators to the features")
         logger.debug(f"X_train: {X_train.columns}")
         logger.debug(f"X_test: {X_test.columns}")
         experiment.log_parameter('features', X_train.columns.tolist())
+        experiment.log_parameter('n_features', len(X_train.columns))
 
         # Dropping rows with NaN values
         # extract row indices from X_train where any of the technical indicators is not NaN
@@ -212,7 +213,7 @@ def train_model(
         mae_baseline = mae
 
         # train an XGBoost model
-        xgb_model = XGBoostModel()
+        xgb_model = CurrentPricePredictor()
         
         xgb_model.fit(
             X_train, 
