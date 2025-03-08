@@ -33,6 +33,11 @@ I need to understand the results of the model.
 https://ta-lib.github.io/ta-lib-python/funcs.html
 
 
+we can use an alternative library called ta which is a pure Python implementation of technical analysis indicators and doesn't require C dependencies.
+
+https://technical-analysis-library-in-python.readthedocs.io/en/latest/ta.html
+
+
 
 
 - 

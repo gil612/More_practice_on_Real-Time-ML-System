@@ -1,5 +1,20 @@
-import talib
 import pandas as pd
+from ta.trend import (
+    SMAIndicator, EMAIndicator, MACD, ADXIndicator, IchimokuIndicator,
+    CCIIndicator, PSARIndicator, TRIXIndicator
+)
+from ta.momentum import (
+    RSIIndicator, StochasticOscillator, WilliamsRIndicator,
+    AwesomeOscillatorIndicator, UltimateOscillator
+)
+from ta.volatility import (
+    AverageTrueRange, BollingerBands, KeltnerChannel
+)
+from ta.volume import (
+    AccDistIndexIndicator, ChaikinMoneyFlowIndicator,
+    MFIIndicator, OnBalanceVolumeIndicator,
+    VolumeWeightedAveragePrice
+)
 
 def add_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -33,25 +48,35 @@ def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add core technical indicators to the features.
     """
-    # Remove duplicate calculations that exist in other specialized functions
+    # RSI
+    rsi = RSIIndicator(close=df['close'], window=14)
+    df['RSI_14'] = rsi.rsi()
     
-    # Keep unique indicators not present in other functions
-    df['RSI_14'] = talib.RSI(df['close'], timeperiod=14)
-    df['CCI'] = talib.CCI(df['high'], df['low'], df['close'], timeperiod=14)
-    df['CMF'] = talib.ADOSC(df['high'], df['low'], df['close'], df['volume'], fastperiod=3, slowperiod=10)
+    # CCI
+    cci = CCIIndicator(high=df['high'], low=df['low'], close=df['close'], window=14)
+    df['CCI'] = cci.cci()
+    
+    # Chaikin Money Flow
+    cmf = ChaikinMoneyFlowIndicator(high=df['high'], low=df['low'], close=df['close'], volume=df['volume'], window=14)
+    df['CMF'] = cmf.chaikin_money_flow()
 
     return df
 
 def add_technical_indicators_volume(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Add technical indicators to the features.
+    Add volume-based technical indicators to the features.
     """
-    df['AD'] = talib.AD(df['high'], df['low'], df['close'], df['volume'])
-    df['ADOSC'] = talib.ADOSC(df['high'], df['low'], df['close'], df['volume'], fastperiod=3, slowperiod=10)
-    df['OBV'] = talib.OBV(df['close'], df['volume'])
+    # Accumulation/Distribution Index
+    adi = AccDistIndexIndicator(high=df['high'], low=df['low'], close=df['close'], volume=df['volume'])
+    df['AD'] = adi.acc_dist_index()
     
+    # Chaikin Money Flow
+    cmf = ChaikinMoneyFlowIndicator(high=df['high'], low=df['low'], close=df['close'], volume=df['volume'], window=14)
+    df['CMF'] = cmf.chaikin_money_flow()
     
-    
+    # On Balance Volume
+    obv = OnBalanceVolumeIndicator(close=df['close'], volume=df['volume'])
+    df['OBV'] = obv.on_balance_volume()
     
     return df
 
@@ -59,132 +84,74 @@ def add_momentum_indicators(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add momentum indicators to the features.
     """
-    df['ADX'] = talib.ADX(df['high'], df['low'], df['close'], timeperiod=14)
-    df['ADXR'] = talib.ADXR(df['high'], df['low'], df['close'], timeperiod=14)
-    df['APO'] = talib.APO(df['close'], fastperiod=12, slowperiod=26, matype=0)
-    aroon_up, aroon_down = talib.AROON(df['high'], df['low'], timeperiod=14)
-    df['AROON_UP'] = aroon_up
-    df['AROON_DOWN'] = aroon_down
-    df['AROONOSC'] = talib.AROONOSC(df['high'], df['low'], timeperiod=14)
-    df['BOP'] = talib.BOP(df['open'], df['high'], df['low'], df['close'])
-    df['CMO'] = talib.CMO(df['close'], timeperiod=14)
-    df['DX'] = talib.DX(df['high'], df['low'], df['close'], timeperiod=14)
+    # ADX
+    adx = ADXIndicator(high=df['high'], low=df['low'], close=df['close'], window=14)
+    df['ADX'] = adx.adx()
     
-    # Fix MACD assignments
-    macd, macd_signal, macd_hist = talib.MACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
-    df['MACD'] = macd
-    df['MACD_SIGNAL'] = macd_signal
-    df['MACD_HIST'] = macd_hist
+    # MACD
+    macd = MACD(close=df['close'], window_slow=26, window_fast=12, window_sign=9)
+    df['MACD'] = macd.macd()
+    df['MACD_SIGNAL'] = macd.macd_signal()
+    df['MACD_HIST'] = macd.macd_diff()
     
-    # Fix MACDEXT parameters - removed matype
-    macdext, macdext_signal, macdext_hist = talib.MACDEXT(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
-    df['MACDEXT'] = macdext
-    df['MACDEXT_SIGNAL'] = macdext_signal
-    df['MACDEXT_HIST'] = macdext_hist
+    # RSI
+    rsi = RSIIndicator(close=df['close'], window=14)
+    df['RSI'] = rsi.rsi()
     
-    macdfix, macdfix_signal, macdfix_hist = talib.MACDFIX(df['close'], signalperiod=9)
-    df['MACDFIX'] = macdfix
-    df['MACDFIX_SIGNAL'] = macdfix_signal
-    df['MACDFIX_HIST'] = macdfix_hist
+    # Stochastic Oscillator
+    stoch = StochasticOscillator(high=df['high'], low=df['low'], close=df['close'], window=14, smooth_window=3)
+    df['STOCH_K'] = stoch.stoch()
+    df['STOCH_D'] = stoch.stoch_signal()
     
-    df['MFI'] = talib.MFI(df['high'], df['low'], df['close'], df['volume'], timeperiod=14)
-    df['MINUS_DI'] = talib.MINUS_DI(df['high'], df['low'], df['close'], timeperiod=14)
-    df['MINUS_DM'] = talib.MINUS_DM(df['high'], df['low'], timeperiod=14)
-    df['MOM'] = talib.MOM(df['close'], timeperiod=10)
-    df['PLUS_DI'] = talib.PLUS_DI(df['high'], df['low'], df['close'], timeperiod=14)
-    df['PLUS_DM'] = talib.PLUS_DM(df['high'], df['low'], timeperiod=14)
-    df['PPO'] = talib.PPO(df['close'], fastperiod=12, slowperiod=26, matype=0)
-    df['ROC'] = talib.ROC(df['close'], timeperiod=10)
-    df['ROCP'] = talib.ROCP(df['close'], timeperiod=10)
-    df['ROCR'] = talib.ROCR(df['close'], timeperiod=10)
-    df['ROCR100'] = talib.ROCR100(df['close'], timeperiod=10)
-    
-    slowk, slowd = talib.STOCH(df['high'], df['low'], df['close'], 
-                              fastk_period=14, slowk_period=3, 
-                              slowk_matype=0, slowd_period=3, 
-                              slowd_matype=0)
-    df['STOCH_K'] = slowk
-    df['STOCH_D'] = slowd
-    
-    fastk, fastd = talib.STOCHF(df['high'], df['low'], df['close'], 
-                               fastk_period=14, fastd_period=3, 
-                               fastd_matype=0)
-    df['STOCHF_K'] = fastk
-    df['STOCHF_D'] = fastd
-    
-    stochrsi_k, stochrsi_d = talib.STOCHRSI(df['close'], timeperiod=14, 
-                                           fastk_period=5, fastd_period=3, 
-                                           fastd_matype=0)
-    df['STOCHRSI_K'] = stochrsi_k
-    df['STOCHRSI_D'] = stochrsi_d
-    
-    df['TRIX'] = talib.TRIX(df['close'], timeperiod=14)
-    df['ULTOSC'] = talib.ULTOSC(df['high'], df['low'], df['close'], 
-                               timeperiod1=7, timeperiod2=14, timeperiod3=28)
-    df['WILLR'] = talib.WILLR(df['high'], df['low'], df['close'], timeperiod=14)
+    # Williams %R
+    williams = WilliamsRIndicator(high=df['high'], low=df['low'], close=df['close'], lbp=14)
+    df['WILLR'] = williams.williams_r()
     
     return df
 
 def add_technical_indicators_volatility(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Add technical indicators to the features.
-
-    Args:
-        df (pd.DataFrame): The input dataframe is expected to have the following columns:
-        - 'open'
-        - 'high'
-        - 'low'
-        - 'close'
-        - 'volume'
-
-    Returns:
-        pd.DataFrame: The dataframe with the original features and the new technical indicators.
-
-        which are:
-        ATR                  Average True Range
-        NATR                 Normalized Average True Range
-        TRANGE               True Range
+    Add volatility indicators to the features.
     """
-    df['ATR'] = talib.ATR(df['high'], df['low'], df['close'], timeperiod=14)
-    df['NATR'] = talib.NATR(df['high'], df['low'], df['close'], timeperiod=14)
-    df['TRANGE'] = talib.TRANGE(df['high'], df['low'], df['close'])
+    # Average True Range
+    atr = AverageTrueRange(high=df['high'], low=df['low'], close=df['close'], window=14)
+    df['ATR'] = atr.average_true_range()
+    
+    # Bollinger Bands
+    bb = BollingerBands(close=df['close'], window=20, window_dev=2)
+    df['BB_UPPER'] = bb.bollinger_hband()
+    df['BB_MIDDLE'] = bb.bollinger_mavg()
+    df['BB_LOWER'] = bb.bollinger_lband()
+    
+    # Keltner Channel
+    kc = KeltnerChannel(high=df['high'], low=df['low'], close=df['close'], window=20, window_atr=10)
+    df['KC_UPPER'] = kc.keltner_channel_hband()
+    df['KC_MIDDLE'] = kc.keltner_channel_mband()
+    df['KC_LOWER'] = kc.keltner_channel_lband()
+    
     return df
 
 def add_technical_indicators_overlap_studies(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Add technical indicators to the features.
+    Add overlap study indicators to the features.
     """
-    # Fix BBANDS assignment
-    upper, middle, lower = talib.BBANDS(df['close'], timeperiod=5, nbdevup=2, nbdevdn=2)
-    df['BB_UPPER'] = upper
-    df['BB_MIDDLE'] = middle
-    df['BB_LOWER'] = lower
+    # SMA
+    sma = SMAIndicator(close=df['close'], window=30)
+    df['SMA'] = sma.sma_indicator()
     
-    df['DEMA'] = talib.DEMA(df['close'], timeperiod=30)
-    df['EMA'] = talib.EMA(df['close'], timeperiod=30)
-    df['HT_TRENDLINE'] = talib.HT_TRENDLINE(df['close'])
-    df['KAMA'] = talib.KAMA(df['close'], timeperiod=30)
-    df['MA'] = talib.MA(df['close'], timeperiod=30)
+    # EMA
+    ema = EMAIndicator(close=df['close'], window=30)
+    df['EMA'] = ema.ema_indicator()
     
-    mama, fama = talib.MAMA(df['close'])
-    df['MAMA'] = mama
-    df['FAMA'] = fama
+    # Ichimoku
+    ichimoku = IchimokuIndicator(high=df['high'], low=df['low'], window1=9, window2=26, window3=52)
+    df['ICHIMOKU_A'] = ichimoku.ichimoku_a()
+    df['ICHIMOKU_B'] = ichimoku.ichimoku_b()
     
-    df['MAVP'] = talib.MAVP(df['close'], df['volume'], minperiod=2, maxperiod=30)
-    df['MIDPOINT'] = talib.MIDPOINT(df['close'], timeperiod=14)
-    df['MIDPRICE'] = talib.MIDPRICE(df['high'], df['low'], timeperiod=14)
+    # TRIX
+    trix = TRIXIndicator(close=df['close'], window=30)
+    df['TRIX'] = trix.trix()
     
-    # Fix SAR parameters - using correct parameter names
-    df['SAR'] = talib.SAR(df['high'], df['low'], acceleration=0.02, maximum=0.2)
-    
-    # Remove SAREXT for now as it's causing issues and might not be essential
-    # We can add it back later if needed with correct parameters
-    
-    df['SMA'] = talib.SMA(df['close'], timeperiod=30)
-    df['T3'] = talib.T3(df['close'], timeperiod=5, vfactor=0)
-    df['TEMA'] = talib.TEMA(df['close'], timeperiod=30)
-    df['TRIMA'] = talib.TRIMA(df['close'], timeperiod=30)
-    df['WMA'] = talib.WMA(df['close'], timeperiod=30)
     return df
 
 def add_price_based_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -247,8 +214,5 @@ def add_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
     # Handle missing values more gracefully
     df = df.fillna(method='ffill')  # Forward fill
     df = df.fillna(method='bfill')  # Back fill any remaining NaNs
-    
-    # Remove any remaining columns with NaN values
-    df = df.dropna(axis=1, how='any')
     
     return df
