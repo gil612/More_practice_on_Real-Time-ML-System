@@ -21,6 +21,12 @@ build-topic-to-feature:
 	docker compose -f feature-pipeline.yml build --no-cache topic_to_feature_store
 	docker compose -f feature-pipeline.yml up -d topic_to_feature_store
 
+reset-docker:
+	docker container prune
+	docker image prune
+	docker volume prune
+	docker network prune
+
 
 
 

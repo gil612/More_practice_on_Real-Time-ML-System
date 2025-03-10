@@ -23,7 +23,7 @@ comet-ml = "^3.49.0"
 setuptools = "69.0.3"
 xgboost = "^2.1.4"
 optuna = "^4.2.1"
-ta-lib = "^0.4.28"
+ta = "^0.11.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.0"

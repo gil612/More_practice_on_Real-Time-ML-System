@@ -30,6 +30,7 @@ class OhlcDataReader:
         feature_group_version: Optional[int] = None,
     ):
         self.ohlc_window_sec = ohlc_window_sec
+        self.hopsworks_config = hopsworks_config
         self.feature_view_name = feature_view_name
         self.feature_view_version = feature_view_version
         self.feature_group_name = feature_group_name

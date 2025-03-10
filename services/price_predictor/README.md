@@ -37,6 +37,23 @@ we can use an alternative library called ta which is a pure Python implementatio
 
 https://technical-analysis-library-in-python.readthedocs.io/en/latest/ta.html
 
+My Comet_ml project experiments:
+https://www.comet.com/gil612/price-predictor/view/new/panels
+
+
+Build inference pipeline:
+- Create Predictor Service:
+    - recieves info from OHLC Feature Group in Feature Store
+    - recieves info from ML model in Model metadata
+    - generates the prediction to Predcitions FG in FS
+
+- Create CDC (change data capture) Pattern
+    Objective is to use functions to deal with a database like (Insert, Update, Delete)
+    Example: If there are changes in the row, send a notification with what are changes, aend them to a kafka topic and I will pick that in process wherever need.
+    Target system can be Database, Cache, Search Index, DAta Warehouse, Data Lake
+    Problem: Hopsworks does not support CDC pattern
+- Create REST API:
+    - recieves info from Predictions Feature group in Feature Store
 
 
 

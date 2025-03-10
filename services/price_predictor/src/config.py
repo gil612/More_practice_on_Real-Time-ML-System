@@ -1,7 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class AppConfig(BaseSettings):
-    feature_view_name: str = "ohlcv_feature_view"
+    model_config = SettingsConfigDict(env_file=".env")
+    feature_view_name: str = "ohlcv_feature_view_2"
     feature_view_version: int = 12
     feature_group_name: str 
     feature_group_version: int
@@ -11,10 +12,9 @@ class AppConfig(BaseSettings):
     forecast_steps: int
     n_search_trials: int
     n_splits: int
+    last_n_minutes: int
+    model_status: str
 
-
-    class Config:
-        env_file = ".env"
 
 class HopsworksConfig(BaseSettings):
     hopsworks_project_name: str
@@ -25,6 +25,7 @@ class HopsworksConfig(BaseSettings):
 class CometConfig(BaseSettings):
     comet_api_key: str
     comet_project_name: str
+    comet_workspace: str
     class Config:
         env_file = "comet_credentials.env"
     
